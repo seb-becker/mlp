@@ -8,6 +8,7 @@
 #ifdef ALLEN_CAHN
 #define eq_name "Allen-Cahn_equation"
 #define rdim 1
+#define initial_value ArrayXd::Zero(d[j], 1)
 #define g(x) ArrayXd tmp = ArrayXd::Zero(1, 1); tmp(0) = 1. / (2. + 2. / 5. * x.square().sum())
 #define X_sde(s, t, x, w) x + sqrt(2. * (t - s)) * w
 #define fn(y) ArrayXd ret = ArrayXd::Zero(1, 1); double phi_r = std::min(4., std::max(-4., y(0))); ret(0) = phi_r - phi_r * phi_r * phi_r
@@ -15,6 +16,7 @@
 #ifdef SINE_GORDON
 #define eq_name "Sine-Gordon_equation"
 #define rdim 1
+#define initial_value ArrayXd::Zero(d[j], 1)
 #define g(x) ArrayXd tmp = ArrayXd::Zero(1, 1); tmp(0) = 1. / (2. + 2. / 5. * x.square().sum())
 #define X_sde(s, t, x, w) x + sqrt(2. * (t - s)) * w
 #define fn(y) ArrayXd ret = ArrayXd::Zero(1, 1); ret(0) = sin(y(0))
@@ -22,6 +24,7 @@
 #ifdef SEMILINEAR_BS
 #define eq_name "Semilinear_Black-Scholes_equation"
 #define rdim 1
+#define initial_value ArrayXd::Constant(d[j], 1, 50.);
 #define g(x) ArrayXd tmp = ArrayXd::Zero(1, 1); tmp(0) = log(0.5 * (1. + x.square().sum()))
 #define X_sde(s, t, x, w) x * ((t - s) / 2. + sqrt(t - s) * w).exp()
 #define fn(y) ArrayXd ret = ArrayXd::Zero(1, 1); ret(0) = y(0) / (1. + y(0) * y(0))
@@ -29,6 +32,7 @@
 #ifdef BS_SYSTEM
 #define eq_name "Semilinear_Black-Scholes_system"
 #define rdim 2
+#define initial_value ArrayXd::Constant(d[j], 1, 5.);
 #define g(x) ArrayXd tmp = ArrayXd::Zero(2, 1); tmp(0) = 1. / (2. + 2. / 5. * x.square().sum()); tmp(1) = log(0.5 * (1. + x.square().sum()))
 #define X_sde(s, t, x, w) x * ((t - s) / 2. + sqrt(t - s) * w).exp()
 #define fn(y) ArrayXd ret = ArrayXd::Zero(2, 1); ret(0) = sin(y(1) / 2. / M_PI); ret(1) = (y(1) - y(0)) / (1. + y(0) * y(0) + y(1) * y(1))
@@ -36,6 +40,7 @@
 #ifdef PDE_SYSTEM
 #define eq_name "Semilinear_PDE_system"
 #define rdim 2
+#define initial_value ArrayXd::Zero(d[j], 1)
 #define g(x) ArrayXd tmp = ArrayXd::Zero(2, 1); tmp(0) = 1. / (2. + 2. / 5. * x.square().sum()); tmp(1) = log(0.5 * (1. + x.square().sum()))
 #define X_sde(s, t, x, w) x + sqrt(2. * (t - s)) * w
 #define fn(y) ArrayXd ret = ArrayXd::Zero(2, 1); ret(0) = y(1) / (1. + y(1) * y(1)); ret(1) = 2. * y(0) / 3.
@@ -93,11 +98,7 @@ int main(int argc, char** argv) {
 		for (uint8_t k = 0; k < sizeof(T) / sizeof(T[0]); k++) {
 			for (uint8_t n = 1; n <= N_MAX; n++) {
 				std::chrono::time_point<std::chrono::high_resolution_clock> start_time = std::chrono::high_resolution_clock::now();
-		#if defined(SEMILINEAR_BS) || defined(BS_SYSTEM)
-				ArrayXd xi = ArrayXd::Constant(d[j], 1, 5.);
-		#else
-				ArrayXd xi = ArrayXd::Zero(d[j], 1);
-		#endif
+				ArrayXd xi = initial_value;
 				ArrayXd result = ml_picard(n, n, d[j], xi, 0., T[k], true);
 
 				std::chrono::time_point<std::chrono::high_resolution_clock> end_time = std::chrono::high_resolution_clock::now();
