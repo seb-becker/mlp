@@ -1,8 +1,3 @@
-//#define ALLEN_CAHN
-//#define SINE_GORDON
-//#define SEMILINEAR_BS
-//#define PDE_SYSTEM
-
 #define N_MAX 8
 
 #ifdef ALLEN_CAHN
