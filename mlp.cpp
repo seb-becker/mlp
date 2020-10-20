@@ -3,6 +3,7 @@
 #ifdef ALLEN_CAHN
 #define eq_name "Allen-Cahn_equation"
 #define rdim 1
+#define TIME 1.
 #define initial_value ArrayXd::Zero(d[j], 1)
 #define g(x) ArrayXd tmp = ArrayXd::Zero(1, 1); tmp(0) = 1. / (2. + 2. / 5. * x.square().sum())
 #define X_sde(s, t, x, w) x + sqrt(2. * (t - s)) * w
@@ -11,6 +12,7 @@
 #ifdef SINE_GORDON
 #define eq_name "Sine-Gordon_equation"
 #define rdim 1
+#define TIME 1.
 #define initial_value ArrayXd::Zero(d[j], 1)
 #define g(x) ArrayXd tmp = ArrayXd::Zero(1, 1); tmp(0) = 1. / (2. + 2. / 5. * x.square().sum())
 #define X_sde(s, t, x, w) x + sqrt(2. * (t - s)) * w
@@ -19,6 +21,7 @@
 #ifdef SEMILINEAR_BS
 #define eq_name "Semilinear_Black-Scholes_equation"
 #define rdim 1
+#define TIME 1.
 #define initial_value ArrayXd::Constant(d[j], 1, 50.);
 #define g(x) ArrayXd tmp = ArrayXd::Zero(1, 1); tmp(0) = log(0.5 * (1. + x.square().sum()))
 #define X_sde(s, t, x, w) x * ((t - s) / 2. + sqrt(t - s) * w).exp()
@@ -27,6 +30,7 @@
 #ifdef BS_SYSTEM
 #define eq_name "Semilinear_Black-Scholes_system"
 #define rdim 2
+#define TIME .5
 #define initial_value ArrayXd::Constant(d[j], 1, 5.);
 #define g(x) ArrayXd tmp = ArrayXd::Zero(2, 1); tmp(0) = 1. / (2. + 2. / 5. * x.square().sum()); tmp(1) = log(0.5 * (1. + x.square().sum()))
 #define X_sde(s, t, x, w) x * ((t - s) / 2. + sqrt(t - s) * w).exp()
@@ -35,6 +39,7 @@
 #ifdef PDE_SYSTEM
 #define eq_name "Semilinear_PDE_system"
 #define rdim 2
+#define TIME 1.
 #define initial_value ArrayXd::Zero(d[j], 1)
 #define g(x) ArrayXd tmp = ArrayXd::Zero(2, 1); tmp(0) = 1. / (2. + 2. / 5. * x.square().sum()); tmp(1) = log(0.5 * (1. + x.square().sum()))
 #define X_sde(s, t, x, w) x + sqrt(2. * (t - s)) * w
@@ -85,29 +90,27 @@ int main(int argc, char** argv) {
 	}
 	out_file << "elapsed_secs" << std::endl;
 
-	double T[1] = {0.5};
+	double T = TIME;
 	uint16_t d[3] = {10, 100, 1000};
 
 
 	for (uint16_t j = 0; j < sizeof(d) / sizeof(d[0]); j++) {
-		for (uint8_t k = 0; k < sizeof(T) / sizeof(T[0]); k++) {
-			for (uint8_t n = 1; n <= N_MAX; n++) {
-				std::chrono::time_point<std::chrono::high_resolution_clock> start_time = std::chrono::high_resolution_clock::now();
-				ArrayXd xi = initial_value;
-				ArrayXd result = ml_picard(n, n, d[j], xi, 0., T[k], true);
+		for (uint8_t n = 1; n <= N_MAX; n++) {
+			std::chrono::time_point<std::chrono::high_resolution_clock> start_time = std::chrono::high_resolution_clock::now();
+			ArrayXd xi = initial_value;
+			ArrayXd result = ml_picard(n, n, d[j], xi, 0., T, true);
 
-				std::chrono::time_point<std::chrono::high_resolution_clock> end_time = std::chrono::high_resolution_clock::now();
-				double elapsed_secs = double(std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count()) / 1000. / 1000.;
-				std::cout << "T: " << T[k] << std::endl << "d: " << (int)d[j] << std::endl;
-				std::cout << "n: " << (int)n << std::endl << "Result:" << std::endl << result << std::endl;
-				std::cout << "Elapsed secs: " << elapsed_secs << std::endl << std::endl;
+			std::chrono::time_point<std::chrono::high_resolution_clock> end_time = std::chrono::high_resolution_clock::now();
+			double elapsed_secs = double(std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count()) / 1000. / 1000.;
+			std::cout << "T: " << T << std::endl << "d: " << (int)d[j] << std::endl;
+			std::cout << "n: " << (int)n << std::endl << "Result:" << std::endl << result << std::endl;
+			std::cout << "Elapsed secs: " << elapsed_secs << std::endl << std::endl;
 
-				out_file << (int)d[j] << ", " << T[k] << ", " << (int)n << ", ";
-				for (uint8_t i = 0; i < rdim; i++) {
-					out_file << result(i) << ", ";
-				}
-				out_file << elapsed_secs << std::endl;
+			out_file << (int)d[j] << ", " << T << ", " << (int)n << ", ";
+			for (uint8_t i = 0; i < rdim; i++) {
+				out_file << result(i) << ", ";
 			}
+			out_file << elapsed_secs << std::endl;
 		}
 	}
 
